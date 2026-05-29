@@ -8,10 +8,10 @@
   <meta property="og:title" content="世界杯梗卡抽卡机">
   <meta property="og:description" content="每天拆包抽世界杯梗卡，休闲玩家也能看懂足球梗。">
   <title>世界杯梗卡抽卡机</title>
-  <link rel="stylesheet" href="styles.css?v=20260529f">
-  <script defer src="data/cards.js?v=20260529f"></script>
-  <script defer src="data/events.js?v=20260529f"></script>
-  <script defer src="app.js?v=20260529f"></script>
+  <link rel="stylesheet" href="styles.css?v=20260529g">
+  <script defer src="data/cards.js?v=20260529g"></script>
+  <script defer src="data/events.js?v=20260529g"></script>
+  <script defer src="app.js?v=20260529g"></script>
 </head>
 <body>
   <div class="paper-texture" aria-hidden="true"></div>
@@ -139,6 +139,26 @@
         <button class="icon-btn" type="button" id="team-close" aria-label="关闭">×</button>
       </header>
       <div class="team-grid" id="team-grid"></div>
+    </div>
+  </section>
+
+  <section class="opening-overlay" id="opening-overlay" aria-hidden="true">
+    <div class="opening-stage">
+      <div class="opening-pack" aria-hidden="true">
+        <span class="opening-ribbon" id="opening-pool">全梗池</span>
+        <span class="opening-ball"></span>
+        <span class="opening-title">拆包中</span>
+        <span class="opening-tear"></span>
+      </div>
+      <div class="opening-burst" aria-hidden="true">
+        <span style="--i:0"></span>
+        <span style="--i:1"></span>
+        <span style="--i:2"></span>
+        <span style="--i:3"></span>
+        <span style="--i:4"></span>
+        <span style="--i:5"></span>
+      </div>
+      <p id="opening-caption">正在撕开梗包...</p>
     </div>
   </section>
 
