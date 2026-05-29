@@ -7,6 +7,8 @@ const DAILY_BASE_TICKETS = 30;
 const DAILY_QUIZ_LIMIT = 5;
 const SSR_PITY_LIMIT = 30;
 const TEAM_WEIGHT = 2;
+const OPENING_DURATION = 1180;
+const RESULT_REVEAL_STEP = 88;
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -96,6 +98,7 @@ let collectionFilter = "all";
 let currentCard = null;
 let latestResults = [];
 let toastTimer = null;
+let isDrawing = false;
 
 function todayKey() {
   const now = new Date();
@@ -334,11 +337,17 @@ function buildDrawRarities(count) {
   return rarities;
 }
 
-function drawCards(count) {
+async function drawCards(count) {
+  if (isDrawing) return;
+
   if (state.tickets < count) {
     showToast(count === 10 ? "球票不够十连，先答题拿票或明天再来" : "今天球票用完了，答题还能拿票");
     return;
   }
+
+  isDrawing = true;
+  renderDrawButtons();
+  await playOpeningAnimation(count);
 
   const poolCards = getPoolCards();
   const rarities = buildDrawRarities(count);
@@ -362,6 +371,7 @@ function drawCards(count) {
   save();
   renderResult();
   setScreen("result");
+  scheduleRevealDone(count);
 }
 
 function getBestCard(cards) {
@@ -409,8 +419,9 @@ function renderPoolTabs() {
 function renderDrawButtons() {
   $$("[data-pull]").forEach((button) => {
     const count = Number(button.dataset.pull);
-    button.disabled = state.tickets < count;
+    button.disabled = isDrawing || state.tickets < count;
   });
+  $("#pack-button").disabled = isDrawing || state.tickets < 1;
 }
 
 function renderResult() {
@@ -419,7 +430,7 @@ function renderResult() {
   $("#result-ticket-count").textContent = state.tickets;
   const grid = $("#result-grid");
   grid.classList.toggle("single", latestResults.length === 1);
-  grid.innerHTML = latestResults.map((card) => renderMemeCard(card, { result: true })).join("");
+  grid.innerHTML = latestResults.map((card, index) => renderMemeCard(card, { result: true, revealIndex: index })).join("");
 
   const best = currentCard;
   $("#result-note").textContent = best
@@ -431,10 +442,13 @@ function renderResult() {
 function renderMemeCard(card, options = {}) {
   const rarity = RARITY[card.r];
   const teamBoost = matchesTeam(card);
+  const premium = isSsrPlus(card);
   const classes = [
     "meme-card",
     rarityClass(card),
     options.result ? "result-card" : "",
+    options.result ? "reveal-card" : "",
+    premium && !options.locked ? "premium-card" : "",
     options.big ? "big" : "",
     options.locked ? "locked" : "",
   ].filter(Boolean).join(" ");
@@ -445,7 +459,7 @@ function renderMemeCard(card, options = {}) {
   const corner = options.locked ? "LOCK" : `#${String(card.id).padStart(3, "0")}`;
 
   return `
-    <button class="${classes}" type="button" data-card-id="${card.id}" ${options.locked ? "aria-label=\"未解锁梗卡\"" : ""}>
+    <button class="${classes}" type="button" data-card-id="${card.id}" style="--reveal-index:${Number(options.revealIndex) || 0}" ${options.locked ? "aria-label=\"未解锁梗卡\"" : ""}>
       <span class="card-rarity">${rarity.label}</span>
       <span class="card-corner">${escapeHtml(corner)}</span>
       <span class="card-ball" aria-hidden="true"></span>
@@ -456,6 +470,34 @@ function renderMemeCard(card, options = {}) {
       ${teamBoost && !options.locked ? "<i>主队加成</i>" : ""}
     </button>
   `;
+}
+
+function playOpeningAnimation(count) {
+  const overlay = $("#opening-overlay");
+  const caption = $("#opening-caption");
+  const pack = $("#pack-button");
+  $("#opening-pool").textContent = activePoolConfig().name;
+  caption.textContent = count === 10 ? "十连拆包中，梗力正在上升..." : "正在撕开梗包...";
+  overlay.classList.toggle("ten", count === 10);
+  overlay.classList.add("show");
+  overlay.setAttribute("aria-hidden", "false");
+  pack.classList.add("opening");
+  return new Promise((resolve) => {
+    window.setTimeout(() => {
+      overlay.classList.remove("show", "ten");
+      overlay.setAttribute("aria-hidden", "true");
+      pack.classList.remove("opening");
+      resolve();
+    }, OPENING_DURATION);
+  });
+}
+
+function scheduleRevealDone(count) {
+  const delay = 520 + Math.max(0, count - 1) * RESULT_REVEAL_STEP;
+  window.setTimeout(() => {
+    isDrawing = false;
+    renderDrawButtons();
+  }, delay);
 }
 
 function openDetail(cardId) {
