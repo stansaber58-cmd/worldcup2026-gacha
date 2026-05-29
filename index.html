@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#f6edd7">
+  <meta name="description" content="世界杯梗卡抽卡机：球还没进，梗先出了。每天拆包抽足球梗，答题拿球票，下载卡图分享。">
+  <meta property="og:title" content="世界杯梗卡抽卡机">
+  <meta property="og:description" content="每天拆包抽世界杯梗卡，休闲玩家也能看懂足球梗。">
+  <title>世界杯梗卡抽卡机</title>
+  <link rel="stylesheet" href="styles.css?v=20260529f">
+  <script defer src="data/cards.js?v=20260529f"></script>
+  <script defer src="data/events.js?v=20260529f"></script>
+  <script defer src="app.js?v=20260529f"></script>
+</head>
+<body>
+  <div class="paper-texture" aria-hidden="true"></div>
+
+  <main class="app" id="app">
+    <section class="screen active" id="home-screen" data-screen="home">
+      <header class="home-head">
+        <div class="brand-lockup">
+          <span class="brand-kicker">WORLD CUP MEME PACK</span>
+          <h1>世界杯梗卡抽卡机</h1>
+          <p>球还没进，梗先出了！</p>
+        </div>
+        <button class="book-link" type="button" data-screen-target="collection">图鉴</button>
+      </header>
+
+      <section class="hud-strip" aria-label="抽卡状态">
+        <div>
+          <span>今日球票</span>
+          <strong><b id="ticket-count">0</b> 张</strong>
+        </div>
+        <div>
+          <span>已收录</span>
+          <strong id="owned-count">0/403</strong>
+        </div>
+        <div>
+          <span>SSR+保底</span>
+          <strong id="pity-count">0/30</strong>
+        </div>
+      </section>
+
+      <section class="control-row" aria-label="卡池与主队">
+        <nav class="pool-tabs" id="pool-tabs" aria-label="卡池选择"></nav>
+        <button class="team-chip" id="team-open" type="button">主队加成：未选择</button>
+      </section>
+
+      <button class="booster-pack" id="pack-button" type="button" aria-label="开包抽卡">
+        <span class="pack-ribbon" id="pack-ribbon">全梗池</span>
+        <span class="pack-series">MEME STICKERS 2026</span>
+        <span class="pack-ball" aria-hidden="true"></span>
+        <span class="pack-title" id="pack-title">世界杯全梗包</span>
+        <span class="pack-sub" id="pack-sub">经典老梗 / 新赛季热梗 / 球迷暗号</span>
+        <span class="pack-tear">点按拆包</span>
+      </button>
+
+      <div class="draw-actions">
+        <button class="btn primary" type="button" data-pull="1">单抽 1 票</button>
+        <button class="btn dark" type="button" data-pull="10">十连 10 票</button>
+      </div>
+
+      <p class="ticket-hint" id="ticket-hint">每天自动发 30 张球票。看懂梗并答对小题，可额外拿票。</p>
+
+      <section class="mini-rules" aria-label="玩法摘要">
+        <div><strong>01</strong><span>拆包抽梗</span></div>
+        <div><strong>02</strong><span>看懂名场面</span></div>
+        <div><strong>03</strong><span>答题续票</span></div>
+        <div><strong>04</strong><span>下载卡图</span></div>
+      </section>
+    </section>
+
+    <section class="screen" id="result-screen" data-screen="result">
+      <header class="topbar">
+        <button class="icon-btn" type="button" data-screen-target="home" aria-label="返回首页">‹</button>
+        <div>
+          <span id="result-pool">全梗池</span>
+          <h2>开包结果</h2>
+        </div>
+        <span class="ticket-pill"><b id="result-ticket-count">0</b> 票</span>
+      </header>
+
+      <div class="result-grid" id="result-grid"></div>
+      <p class="result-note" id="result-note"></p>
+
+      <div class="draw-actions sticky-actions">
+        <button class="btn primary" type="button" id="best-card-detail">看懂最佳梗</button>
+        <button class="btn pale" type="button" data-pull="1">再抽一张</button>
+        <button class="btn dark" type="button" data-pull="10">再来十连</button>
+      </div>
+    </section>
+
+    <section class="screen" id="detail-screen" data-screen="detail">
+      <header class="topbar">
+        <button class="icon-btn" type="button" data-screen-target="result" aria-label="返回结果">‹</button>
+        <div>
+          <span>梗卡说明书</span>
+          <h2>不懂球也能懂</h2>
+        </div>
+      </header>
+
+      <article class="detail-layout" id="detail-card"></article>
+
+      <section class="quiz-box" id="quiz-box" aria-label="梗理解题"></section>
+
+      <canvas id="share-canvas" width="900" height="1200"></canvas>
+      <img class="share-preview" id="share-preview" alt="生成的梗卡图片">
+
+      <div class="draw-actions sticky-actions">
+        <button class="btn primary" type="button" id="download-card">下载这张卡图</button>
+        <button class="btn pale" type="button" data-screen-target="home">继续抽卡</button>
+      </div>
+    </section>
+
+    <section class="screen" id="collection-screen" data-screen="collection">
+      <header class="topbar">
+        <button class="icon-btn" type="button" data-screen-target="home" aria-label="返回首页">‹</button>
+        <div>
+          <span>MY MEME ALBUM</span>
+          <h2>梗卡图鉴</h2>
+        </div>
+        <span class="ticket-pill" id="album-count">0/403</span>
+      </header>
+
+      <input class="search" id="card-search" type="search" placeholder="搜索梗名、年份、球队">
+      <nav class="album-tabs" id="collection-tabs" aria-label="图鉴筛选"></nav>
+      <div class="collection-grid" id="collection-grid"></div>
+    </section>
+  </main>
+
+  <section class="sheet" id="team-sheet" aria-hidden="true">
+    <div class="sheet-panel">
+      <header class="sheet-head">
+        <div>
+          <span>主队加成</span>
+          <h2>相关梗卡权重 x2</h2>
+        </div>
+        <button class="icon-btn" type="button" id="team-close" aria-label="关闭">×</button>
+      </header>
+      <div class="team-grid" id="team-grid"></div>
+    </div>
+  </section>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
